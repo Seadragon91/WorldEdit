@@ -105,6 +105,8 @@ function HandleDistrCommand(a_Split, a_Player)
 	local TotalCount = Area:GetVolume()
 	local BlockCounts = {}
 
+	local sw = cStopWatch.new()
+	sw:Start()
 	for X = 0, SizeX do
 		for Y = 0, SizeY do
 			for Z = 0, SizeZ do
@@ -113,6 +115,27 @@ function HandleDistrCommand(a_Split, a_Player)
 			end
 		end
 	end
+	a_Player:SendMessage("Current: " .. tostring(sw:GetElapsedMilliseconds()))
+	BlockCounts = {}
+
+	sw = cStopWatch.new()
+	sw:Start()
+	local blocksCounted = Area:CountAllNonAirBlocksAndMetas()
+	local nonAirBlocks = 0
+	for idMeta, amount in pairs(blocksCounted) do
+		local tbIdMeta = StringSplit(idMeta, "-")
+		local BlockType = tonumber(tbIdMeta[1])
+		-- local meta = tonumber(tbIdMeta[2])
+		if BlockCounts[BlockType] == nil then
+			BlockCounts[BlockType] = amount
+			nonAirBlocks = nonAirBlocks + amount
+		else
+			BlockCounts[BlockType] = BlockCounts[BlockType] + amount
+			nonAirBlocks = nonAirBlocks + amount
+		end
+	end
+	BlockCounts[0] = TotalCount - nonAirBlocks
+	a_Player:SendMessage("New: " .. tostring(sw:GetElapsedMilliseconds()))
 
 	-- Generate the output.
 	-- Sort records by count.
